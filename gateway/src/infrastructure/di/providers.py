@@ -32,9 +32,10 @@ class TimezoneProvider(Provider):
 class RabbitMQProvider(Provider):
     @provide(scope=Scope.APP, provides=RMQConnection)
     async def provide_connection(self) -> aio_pika.abc.AbstractRobustConnection:
+        url = f"amqp://guest:guest@rabbitmq:5672/"
         while True:
             try:
-                connection = await aio_pika.connect_robust()
+                connection = await aio_pika.connect_robust(url=url)
                 break
             except ConnectionError:
                 await asyncio.sleep(5)

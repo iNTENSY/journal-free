@@ -15,3 +15,7 @@ class InvalidTokenPayloadError(APIException):
 
 class InvalidTokenError(APIException):
     message = "Invalid token data"
+
+
+class ServiceError(APIException):
+    message = "Service is unavailable"

@@ -5,6 +5,7 @@ from src.application.dtos.auth.responses import LoginResponse
 from src.application.interfaces.brokers.rabbitmq.types import RMQChannel
 from src.application.interfaces.interactor import Interactor
 from src.application.interfaces.jwt import IJwtProcessor
+from src.infrastructure.brokers.utils.decorators import wait_for
 from src.infrastructure.brokers.utils.rpc import RabbitMQAsyncRPC
 
 
@@ -24,11 +25,13 @@ class LoginUseCase(Interactor[LoginRequest, LoginResponse]):
         jwt = self.__jwt_processor.generate_token(account)
         return LoginResponse(access_token=jwt)
 
+    @wait_for(timeout=5)
     async def __get_account(self, request: LoginRequest) -> dict[str, Any]:
         exchange = await self.__channel.get_exchange("account_exchange")
         account = await self.__rpc.call(
             exchange=exchange,
             routing_key="account",
+            message_properties={"expiration": 10},
             method="authorize-client",
             data=vars(request)
         )
